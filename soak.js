@@ -36,7 +36,6 @@ export function createSoak() {
     timer += delta;
 
     alpha = Math.floor((timer / detonateTime) * 255);
-    console.log(alpha, alpha.toString(16));
 
     if (timer >= detonateTime) {
       if (!soaked) {

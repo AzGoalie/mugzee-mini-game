@@ -43,11 +43,9 @@ let entities = [mugzee];
 addEventListener("addEntity", ({ entity }) => entities.push(entity));
 addEventListener("damage", () => lives--);
 addEventListener("increaseMultiplier", () => {
-  console.log("increase multiplier");
   multiplier++;
 });
 addEventListener("resetMultiplier", () => {
-  console.log("reset multiplier");
   multiplier = 1;
 });
 
