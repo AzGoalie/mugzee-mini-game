@@ -20,14 +20,14 @@ export class AddEntityEvent extends Event {
 const WIDTH = 1280;
 const HEIGHT = 720;
 
-let paused = true;
-let wiped = false;
-let lives = 3;
+let paused;
+let wiped;
+let lives;
 
-let score = 0;
-let multiplier = 1;
-let scoreTimer = 0;
-let nextScoreTick = 5.1;
+let score;
+let multiplier;
+let scoreTimer;
+let nextScoreTick;
 
 audio.pullTimer.onended = () => {
   audio.alarm.play();
@@ -37,8 +37,7 @@ audio.pullTimer.onended = () => {
 
 const abilityTracker = createAbilityTracker();
 const player = createPlayer();
-const mugzee = createMugzee(player);
-let entities = [mugzee];
+let entities = [];
 
 addEventListener("addEntity", ({ entity }) => entities.push(entity));
 addEventListener("damage", () => lives--);
@@ -98,6 +97,12 @@ function reset() {
   lives = 3;
   score = 0;
   multiplier = 1;
+  nextScoreTick = 5.1;
+  scoreTimer = 0;
+
+  player.position.x = 550;
+  player.position.y = 250;
+  entities = [createMugzee(player)];
 
   if (audio.readyCheck.volume > 0) {
     audio.readyCheck.play();
@@ -111,8 +116,6 @@ function reset() {
 function wipe() {
   paused = true;
   wiped = true;
-
-  entities = [mugzee];
 
   audio.music.pause();
   audio.music.currentTime = 0;
