@@ -9,7 +9,7 @@ export function createSoak() {
     y: getRandomInt(230, 550),
   };
 
-  const detonateTime = 5;
+  let detonateTime = 5;
   let timer = 0;
   let soaked = false;
   let alpha = 0;
@@ -49,6 +49,8 @@ export function createSoak() {
   function collide() {
     if (!soaked) {
       soaked = true;
+      detonateTime = timer + 1;
+
       const info = audio.info.cloneNode(true);
       info.volume = 0.2;
       info.play();
