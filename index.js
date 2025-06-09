@@ -151,10 +151,10 @@ function update(delta) {
   }
 
   // Collision check
-  const hit = entities.find(collidedWithPlayer);
-  if (hit) {
-    hit.collide?.();
-  }
+  entities
+    .map(collidedWithPlayer)
+    .filter((hit) => !!hit)
+    .forEach((hit) => hit.collide?.());
 
   if (lives <= 0) {
     lives = 0;
