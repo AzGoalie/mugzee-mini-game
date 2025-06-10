@@ -1,148 +1,124 @@
-const imageFactory = async (path) =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = path;
-    img.onload = () => resolve(img);
-    img.onerror = () => reject();
-  });
+type AssetConfig<T extends object = {}> = {
+  path: string;
+} & Partial<T>;
 
-const audioFactory = async (config) =>
-  new Promise((resolve, reject) => {
-    const path = typeof config === "string" ? config : config.path;
+type AssetTree<T extends AssetConfig = AssetConfig<{}>> = {
+  [key: string]: T | AssetTree<T>;
+};
 
-    const audio = new Audio(path);
-    audio.volume = config.volume ?? 1;
-    audio.oncanplaythrough = () => resolve(audio);
-    audio.onerror = () => reject();
-  });
+function isAssetConfig(value: any): value is AssetConfig<{}> {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    "path" in value &&
+    typeof value.path === "string"
+  );
+}
 
-const defaultOnProgress = (type) => (loaded, total) =>
-  console.log(`Loaded ${loaded}/${total} ${type}`);
-
-function countLeafNodes(obj) {
+function countLeafNodes<T extends AssetConfig>(tree: AssetTree<T>): number {
   let total = 0;
 
-  for (const value of Object.values(obj)) {
-    if (typeof value === "string" || !!value.path) {
+  for (const value of Object.values(tree)) {
+    if (isAssetConfig(value)) {
       total++;
-    } else {
-      total += countLeafNodes(value);
+    } else if (value && typeof value === "object") {
+      total += countLeafNodes(value as AssetTree<T>);
     }
   }
 
   return total;
 }
 
-export async function loadImages(
-  assets,
-  onProgress = defaultOnProgress("images")
-) {
-  return loadAssets(assets, imageFactory, onProgress);
-}
+type AssetFactory<T extends object> = (config: AssetConfig<T>) => Promise<T>;
 
-export async function loadAudio(
-  assets,
-  onProgress = defaultOnProgress("audio")
-) {
-  return loadAssets(assets, audioFactory, onProgress);
-}
+type LoadedAssets<TTree extends AssetTree, TLoadedAsset> = {
+  [K in keyof TTree]: TTree[K] extends AssetConfig
+    ? TLoadedAsset
+    : TTree[K] extends AssetTree
+    ? LoadedAssets<TTree[K], TLoadedAsset>
+    : never;
+};
 
-async function loadAssets(assets, factory, onProgress = defaultOnProgress) {
-  const total = countLeafNodes(assets);
+async function loadAssets<
+  TInputTree extends AssetTree<any>,
+  TLoadedAsset extends object
+>(
+  assets: TInputTree,
+  factory: AssetFactory<TLoadedAsset>,
+  onProgress?: (success: number, total: number) => void
+): Promise<LoadedAssets<TInputTree, TLoadedAsset>> {
+  const total = countLeafNodes(assets as AssetTree<AssetConfig<any>>);
+
   let success = 0;
 
-  async function loadRecursive(obj) {
-    const result = {};
+  async function loadRecursive<TCurrentTree extends AssetTree<any>>(
+    obj: TCurrentTree
+  ): Promise<LoadedAssets<TCurrentTree, TLoadedAsset>> {
+    const result: { [key: string]: any } = {};
 
     await Promise.all(
       Object.entries(obj).map(async ([key, value]) => {
-        if (
-          value &&
-          typeof value === "object" &&
-          !("path" in value || typeof value === "string")
-        ) {
-          result[key] = await loadRecursive(value);
-        } else {
+        if (isAssetConfig(value)) {
           try {
-            result[key] = await factory(value);
+            result[key] = await factory(value as AssetConfig<any>);
             if (onProgress) onProgress(++success, total);
           } catch (err) {
             console.error(`Failed to load asset ${key}:`, err);
           }
+        } else if (value && typeof value === "object") {
+          result[key] = await loadRecursive(value as AssetTree<any>);
         }
       })
     );
 
-    return result;
+    return result as LoadedAssets<TCurrentTree, TLoadedAsset>;
   }
 
   return loadRecursive(assets);
 }
 
-export const images = await loadImages({
-  arena: "./assets/arena.png",
-  mugzee: "./assets/mugzee.png",
-  mine: "./assets/mine.png",
-  meleeDps: "./assets/rdps.svg",
-  wipe: "./assets/wipe.png",
-  reincarnation: "./assets/reincarnation.jpg",
-});
+const imageFactory: AssetFactory<HTMLImageElement> = async (config) => {
+  console.log(`Loading image from: ${config.path}`);
+  if (config.width) console.log(`Image width hint: ${config.width}`);
+  const img = new Image();
+  img.src = config.path;
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = (e) => {
+      console.error(`Error loading image: ${config.path}`, e);
+      reject(new Error(`Failed to load image: ${config.path}`));
+    };
+  });
+  return img;
+};
 
-export const audio = await loadAudio({
-  pullTimer: {
-    path: "./assets/audio/pull timer.ogg",
-    volume: 0.2,
-  },
-  readyCheck: {
-    path: "./assets/audio/ready check.ogg",
-    volume: 0,
-  },
-  alarm: {
-    path: "./assets/audio/alarm.ogg",
-    volume: 0.3,
-  },
-  music: {
-    path: "./assets/audio/music.ogg",
-    volume: 0.2,
-  },
-  wipe: {
-    path: "./assets/audio/wipe.ogg",
-    volume: 0.3,
-  },
-  explosion: {
-    path: "./assets/audio/explosion.ogg",
-    volume: 0.3,
-  },
-  info: {
-    path: "./assets/audio/info.ogg",
-  },
-  mugzee: {
-    anotherStain: {
-      path: "./assets/audio/mugzee/another stain.ogg",
-      volume: 0.3,
-    },
-    justForYou: {
-      path: "./assets/audio/mugzee/just for you.ogg",
-      volume: 0.3,
-    },
-    letsFinishThisZee: {
-      path: "./assets/audio/mugzee/lets finish this zee.ogg",
-    },
-    nowhereToRun: {
-      path: "./assets/audio/mugzee/nowhere to run.ogg",
-    },
-    paintTheTownRed: {
-      path: "./assets/audio/mugzee/paint the town red.ogg",
-    },
-    riggedToExplode: {
-      path: "./assets/audio/mugzee/rigged to explode.ogg",
-    },
-    soManyToys: {
-      path: "./assets/audio/mugzee/so many toys.ogg",
-      volume: 0.3,
-    },
-    timeForDemolition: {
-      path: "./assets/audio/mugzee/time for demolition.ogg",
-    },
-  },
-});
+const audioFactory: AssetFactory<HTMLAudioElement> = async (config) => {
+  console.log(`Loading audio from: ${config.path}`);
+  if (config.volume !== undefined)
+    console.log(`Audio volume: ${config.volume}`);
+  const audio = new Audio();
+  audio.src = config.path;
+  if (config.loop) audio.loop = config.loop;
+  if (config.volume !== undefined) audio.volume = config.volume;
+
+  await new Promise<void>((resolve, reject) => {
+    audio.oncanplaythrough = () => resolve();
+    audio.onerror = (e) => {
+      console.error(`Error loading audio: ${config.path}`, e);
+      reject(new Error(`Failed to load audio: ${config.path}`));
+    };
+  });
+  return audio;
+};
+
+export async function loadImages<
+  T extends AssetTree<AssetConfig<HTMLImageElement>>
+>(assets: T): Promise<LoadedAssets<T, HTMLImageElement>> {
+  return loadAssets(assets, imageFactory);
+}
+
+export async function loadAudio<
+  T extends AssetTree<AssetConfig<HTMLAudioElement>>
+>(assets: T): Promise<LoadedAssets<T, HTMLAudioElement>> {
+  return loadAssets(assets, audioFactory);
+}

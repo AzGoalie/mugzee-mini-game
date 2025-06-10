@@ -1,4 +1,4 @@
-import { audio } from "./assets";
+import { assets } from "./config";
 import { cloneAudio, getRandomInt } from "./utils";
 
 export function createSoak() {
@@ -14,7 +14,7 @@ export function createSoak() {
 
   let remove = false;
 
-  function render(ctx) {
+  function render(ctx: CanvasRenderingContext2D) {
     const hexAlpha = alpha.toString(16).padStart(2, "0");
     ctx.save();
     ctx.fillStyle = soaked ? "#00ff0066" : `#bf0900${hexAlpha}`;
@@ -30,14 +30,14 @@ export function createSoak() {
     ctx.restore();
   }
 
-  function update(delta) {
+  function update(delta: number) {
     timer += delta;
 
     alpha = Math.floor((timer / detonateTime) * 255);
 
     if (timer >= detonateTime) {
       if (!soaked) {
-        cloneAudio(audio.explosion).play();
+        cloneAudio(assets.audio.explosion).play();
         dispatchEvent(new Event("damage"));
       }
       remove = true;
@@ -49,7 +49,7 @@ export function createSoak() {
       soaked = true;
       detonateTime = timer + 1;
 
-      const info = audio.info.cloneNode(true);
+      const info = cloneAudio(assets.audio.info);
       info.volume = 0.2;
       info.play();
     }

@@ -1,13 +1,17 @@
-import { images } from "./assets";
 import { drawImage } from "./canvas";
+import { assets } from "./config";
 import { AddEntityEvent } from "./main";
 import { createMine } from "./mine";
 import { getRandomInt } from "./utils";
 
-export function createMugzee({ position }) {
+export function createMugzee({
+  position,
+}: {
+  position: { x: number; y: number };
+}) {
   const spawnRadius = 50;
 
-  const img = images.mugzee;
+  const img = assets.images.mugzee;
 
   let time = 0;
   let nextMineSpawn = 5;
@@ -22,7 +26,7 @@ export function createMugzee({ position }) {
     dispatchEvent(new AddEntityEvent(createMine({ x, y })));
   }
 
-  function update(delta) {
+  function update(delta: number) {
     time += delta;
 
     if (time >= nextDifficultyIncrease && spawnInterval > 1) {
@@ -36,8 +40,8 @@ export function createMugzee({ position }) {
     }
   }
 
-  const render = (ctx) =>
+  const render = (ctx: CanvasRenderingContext2D) =>
     drawImage(ctx, img, ctx.width / 2, ctx.height / 2, 0.6);
 
-  return { update, render };
+  return { update, render, shouldRemove: () => false };
 }

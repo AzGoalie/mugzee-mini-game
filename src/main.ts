@@ -1,5 +1,4 @@
 import { createAbilityTracker } from "./abilityTracker";
-import { images, audio } from "./assets";
 import {
   drawButton,
   drawFullscreenImage,
@@ -7,11 +6,34 @@ import {
   drawPanel,
   drawText,
 } from "./canvas";
+import { assets, inputMap } from "./config";
+import { bindInputs } from "./input";
 import { createMugzee } from "./mugzee";
 import { createPlayer } from "./player";
 
+declare global {
+  interface CanvasRenderingContext2D {
+    width: number;
+    height: number;
+  }
+
+  interface WindowEventMap {
+    addEntity: AddEntityEvent;
+  }
+}
+
+interface Entity {
+  position?: { x: number; y: number };
+  collide?: () => void;
+  render: (ctx: CanvasRenderingContext2D) => void;
+  update: (delta: number) => void;
+  shouldRemove: () => boolean;
+}
+
 export class AddEntityEvent extends Event {
-  constructor(entity) {
+  readonly entity: Entity;
+
+  constructor(entity: Entity) {
     super("addEntity");
     this.entity = entity;
   }
@@ -20,24 +42,24 @@ export class AddEntityEvent extends Event {
 const WIDTH = 1280;
 const HEIGHT = 720;
 
-let paused;
-let wiped;
-let lives;
+let paused: boolean;
+let wiped: boolean;
+let lives: number;
 
-let score;
-let multiplier;
-let scoreTimer;
-let nextScoreTick;
+let score: number;
+let multiplier: number;
+let scoreTimer: number;
+let nextScoreTick: number;
 
-audio.pullTimer.onended = () => {
-  audio.alarm.play();
-  audio.music.play();
-  audio.mugzee.soManyToys.play();
+assets.audio.pullTimer.onended = () => {
+  assets.audio.alarm.play();
+  assets.audio.music.play();
+  assets.audio.mugzee.soManyToys.play();
 };
 
 const abilityTracker = createAbilityTracker();
 const player = createPlayer();
-let entities = [];
+let entities: Array<Entity> = [];
 
 addEventListener("addEntity", ({ entity }) => entities.push(entity));
 addEventListener("damage", () => lives--);
@@ -48,14 +70,14 @@ addEventListener("resetMultiplier", () => {
   multiplier = 1;
 });
 
-function createCountdown() {
+function createCountdown(): Entity {
   let time = 6;
 
   return {
     render: (ctx) =>
       drawText(
         ctx,
-        Math.floor(time),
+        Math.floor(time).toString(),
         ctx.width / 2,
         ctx.height / 2 - ctx.height / 5,
         75,
@@ -66,7 +88,7 @@ function createCountdown() {
   };
 }
 
-function renderReadyCheck(ctx) {
+function renderReadyCheck(ctx: CanvasRenderingContext2D) {
   drawPanel(ctx, ctx.width / 2, ctx.height / 2, 300, 100);
   drawText(
     ctx,
@@ -82,10 +104,12 @@ function renderReadyCheck(ctx) {
 }
 
 function initialClick() {
-  document.getElementById("wrapper").removeEventListener("click", initialClick);
+  document
+    .getElementById("wrapper")
+    ?.removeEventListener("click", initialClick);
 
-  audio.readyCheck.volume = 0.3;
-  audio.pullTimer.play();
+  assets.audio.readyCheck.volume = 0.3;
+  assets.audio.pullTimer.play();
 
   paused = false;
   entities.push(createCountdown());
@@ -104,27 +128,27 @@ function reset() {
   player.position.y = 250;
   entities = [createMugzee(player)];
 
-  if (audio.readyCheck.volume > 0) {
-    audio.readyCheck.play();
+  if (assets.audio.readyCheck.volume > 0) {
+    assets.audio.readyCheck.play();
   }
 
   // Can't play audio until the user interacts with the page
   // Might as well use this for the ready check
-  document.getElementById("wrapper").addEventListener("click", initialClick);
+  document.getElementById("wrapper")?.addEventListener("click", initialClick);
 }
 
 function wipe() {
   paused = true;
   wiped = true;
 
-  audio.music.pause();
-  audio.music.currentTime = 0;
+  assets.audio.music.pause();
+  assets.audio.music.currentTime = 0;
 
-  audio.wipe.play();
-  audio.wipe.onended = () => reset();
+  assets.audio.wipe.play();
+  assets.audio.wipe.onended = () => reset();
 }
 
-function collidedWithPlayer(entity) {
+function collidedWithPlayer(entity: Entity) {
   if (!entity.position) return;
 
   const dx = player.position.x - entity.position.x;
@@ -134,12 +158,12 @@ function collidedWithPlayer(entity) {
   return distance <= 50 ? entity : null;
 }
 
-function update(delta) {
+function update(delta: number) {
   if (paused) {
     return;
   }
 
-  abilityTracker.update();
+  abilityTracker.update(delta);
   player.update(delta);
   entities.forEach((e) => e.update(delta));
 
@@ -164,7 +188,7 @@ function update(delta) {
   entities = entities.filter(({ shouldRemove }) => !shouldRemove?.());
 }
 
-function renderUi(ctx) {
+function renderUi(ctx: CanvasRenderingContext2D) {
   if (paused && !wiped) {
     renderReadyCheck(ctx);
   }
@@ -174,27 +198,27 @@ function renderUi(ctx) {
   }
 
   if (wiped) {
-    drawFullscreenImage(ctx, images.wipe, 0, 0);
+    drawFullscreenImage(ctx, assets.images.wipe);
   }
 
   // Score
   drawPanel(ctx, 1015, ctx.height / 10, 150, 80);
   drawText(ctx, `Score:`, 950, ctx.height / 11, 25);
-  drawText(ctx, score, 950, ctx.height / 7 - 5, 25);
+  drawText(ctx, score.toString(), 950, ctx.height / 7 - 5, 25);
   drawText(ctx, `x ${multiplier}`, 1035, ctx.height / 7 - 5, 25);
 
   // Life counter
   drawPanel(ctx, 260, ctx.height / 10, 150, 80);
-  drawImage(ctx, images.reincarnation, 230, ctx.height / 10);
-  drawText(ctx, lives, 290, ctx.height / 8, 50, true);
+  drawImage(ctx, assets.images.reincarnation, 230, ctx.height / 10);
+  drawText(ctx, lives.toString(), 290, ctx.height / 8, 50, true);
 }
 
-function render(ctx) {
+function render(ctx: CanvasRenderingContext2D) {
   ctx.save();
   ctx.clearRect(0, 0, ctx.width, ctx.height);
   ctx.restore();
 
-  drawFullscreenImage(ctx, images.arena);
+  drawFullscreenImage(ctx, assets.images.arena);
 
   entities.forEach((e) => e.render(ctx));
 
@@ -204,8 +228,15 @@ function render(ctx) {
 }
 
 function init() {
-  const canvas = document.getElementById("game");
+  const canvas = document.getElementById("game") as HTMLCanvasElement;
+  if (!canvas) {
+    throw new Error("Did you forget to add the canvas with an id of 'game'?");
+  }
+
   const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Failed to get the 2d context...?");
+  }
 
   // Adjust for HDPI screens (mac)
   canvas.style.width = `${WIDTH}px`;
@@ -219,15 +250,17 @@ function init() {
 
   reset();
 
+  bindInputs(inputMap);
+
   let previousTime = 0;
 
-  function frame(timestamp) {
+  function frame(timestamp: number) {
     const delta =
       (previousTime > 0 ? timestamp - previousTime : timestamp) / 1000;
     previousTime = timestamp;
 
     update(delta);
-    render(ctx);
+    render(ctx!);
 
     requestAnimationFrame(frame);
   }

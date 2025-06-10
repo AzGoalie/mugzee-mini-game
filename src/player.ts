@@ -1,22 +1,12 @@
-import { images } from "./assets";
 import { drawImage } from "./canvas";
-import { bindInputs } from "./input";
-
-const inputMap = {
-  moveUp: [{ key: "w" }, { key: "ArrowUp" }],
-  moveLeft: [{ key: "a" }, { key: "ArrowLeft" }],
-  moveDown: [{ key: "s" }, { key: "ArrowDown" }],
-  moveRight: [{ key: "d" }, { key: "ArrowRight" }],
-};
+import { assets } from "./config";
 
 export function createPlayer() {
   const position = { x: 550, y: 250 };
   const velocity = { x: 0, y: 0 };
   const speed = 300;
 
-  const img = images.meleeDps;
-
-  bindInputs(inputMap);
+  const img = assets.images.meleeDps;
 
   addEventListener(
     "moveUp",
@@ -35,12 +25,12 @@ export function createPlayer() {
     ({ pressed }) => (velocity.x += pressed ? speed : -speed)
   );
 
-  const update = (delta) => {
+  const update = (delta: number) => {
     position.x += delta * velocity.x;
     position.y += delta * velocity.y;
   };
 
-  const render = (ctx) => {
+  const render = (ctx: CanvasRenderingContext2D) => {
     drawImage(ctx, img, Math.floor(position.x), Math.floor(position.y), 0.5);
   };
 

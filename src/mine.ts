@@ -1,12 +1,12 @@
-import { audio, images } from "./assets";
 import { drawImage } from "./canvas";
+import { assets } from "./config";
 import { AddEntityEvent } from "./main";
 import { createSoak } from "./soak";
 import { cloneAudio } from "./utils";
 
 const radius = 25;
 
-function renderTarget(ctx, x, y) {
+function renderTarget(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.save();
   ctx.fillStyle = "#c79c6e66";
   ctx.strokeStyle = "#7f634666";
@@ -21,7 +21,7 @@ function renderTarget(ctx, x, y) {
   ctx.restore();
 }
 
-export function createMine(target) {
+export function createMine(target: { x: number; y: number }) {
   const position = { x: 0, y: 0 };
   const velocity = { x: 0, y: 0 };
 
@@ -29,7 +29,7 @@ export function createMine(target) {
   const detonateTime = 3;
   const speed = 100;
 
-  const img = images.mine;
+  const img = assets.images.mine;
 
   let timer = 0;
   let spawned = false;
@@ -39,12 +39,12 @@ export function createMine(target) {
   let initialized = false;
 
   function collide() {
-    cloneAudio(audio.explosion).play();
+    cloneAudio(assets.audio.explosion).play();
     dispatchEvent(new Event("damage"));
     remove = true;
   }
 
-  function render(ctx) {
+  function render(ctx: CanvasRenderingContext2D) {
     if (!initialized) {
       position.x = ctx.width / 2;
       position.y = ctx.height / 2;
@@ -58,7 +58,7 @@ export function createMine(target) {
     }
   }
 
-  function update(delta) {
+  function update(delta: number) {
     timer += delta;
 
     if (!spawned && timer >= spawnTime) {

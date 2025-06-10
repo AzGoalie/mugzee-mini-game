@@ -1,23 +1,9 @@
-import { audio } from "./assets";
 import { drawPanel, drawText } from "./canvas";
-import { bindInputs } from "./input";
-import { cloneAudio } from "./utils";
+import { assets } from "./config";
+import { cloneAudio, shuffleArray } from "./utils";
 
-const abilities = ["1", "2", "3"];
-
-const inputMap = {
-  ability1: [{ key: "1" }],
-  ability2: [{ key: "2" }],
-  ability3: [{ key: "3" }],
-};
-
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
+type Ability = "1" | "2" | "3";
+const abilities: Ability[] = ["1", "2", "3"];
 
 export function createAbilityTracker() {
   const generateSequence = () => shuffleArray([...abilities]);
@@ -25,10 +11,8 @@ export function createAbilityTracker() {
   const errorFill = "#770303";
 
   let sequence = generateSequence();
-  let success = [];
+  let success: string[] = [];
   let currentIndex = 0;
-
-  bindInputs(inputMap);
 
   function reset() {
     sequence = generateSequence();
@@ -36,32 +20,34 @@ export function createAbilityTracker() {
     currentIndex = 0;
   }
 
-  function checkAbility(ability) {
+  function checkAbility(ability: Ability) {
     if (sequence[currentIndex] === ability) {
       success[currentIndex] = successFill;
       currentIndex++;
     } else {
       success[currentIndex] = errorFill;
-      cloneAudio(audio.alarm).play();
+      cloneAudio(assets.audio.alarm).play();
       dispatchEvent(new Event("resetMultiplier"));
     }
 
     if (currentIndex === sequence.length) {
-      cloneAudio(audio.info).play();
+      cloneAudio(assets.audio.info).play();
       reset();
       dispatchEvent(new Event("increaseMultiplier"));
     }
   }
 
-  Object.entries(inputMap).forEach(([key, _], i) => {
-    addEventListener(key, ({ pressed }) => {
-      if (pressed) {
-        checkAbility(abilities[i]);
-      }
-    });
+  addEventListener("ability1", ({ pressed }) => {
+    if (pressed) checkAbility("1");
+  });
+  addEventListener("ability2", ({ pressed }) => {
+    if (pressed) checkAbility("2");
+  });
+  addEventListener("ability3", ({ pressed }) => {
+    if (pressed) checkAbility("3");
   });
 
-  function render(ctx) {
+  function render(ctx: CanvasRenderingContext2D) {
     ctx.save();
 
     const x = ctx.width / 2;
@@ -86,7 +72,7 @@ export function createAbilityTracker() {
     ctx.restore();
   }
 
-  function update(delta) {}
+  function update(_: number) {}
 
   return {
     render,
