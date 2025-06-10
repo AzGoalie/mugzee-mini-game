@@ -1,7 +1,7 @@
-import { audio } from "./assets.js";
-import { drawPanel, drawText } from "./canvas.js";
-import { bindInputs } from "./input.js";
-import { cloneAudio } from "./utils.js";
+import { audio } from "./assets";
+import { drawPanel, drawText } from "./canvas";
+import { bindInputs } from "./input";
+import { cloneAudio } from "./utils";
 
 const abilities = ["1", "2", "3"];
 

@@ -1,8 +1,8 @@
-import { images } from "./assets.js";
-import { drawImage } from "./canvas.js";
-import { AddEntityEvent } from "./index.js";
-import { createMine } from "./mine.js";
-import { getRandomInt } from "./utils.js";
+import { images } from "./assets";
+import { drawImage } from "./canvas";
+import { AddEntityEvent } from "./main";
+import { createMine } from "./mine";
+import { getRandomInt } from "./utils";
 
 export function createMugzee({ position }) {
   const spawnRadius = 50;

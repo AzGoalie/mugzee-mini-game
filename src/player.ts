@@ -1,6 +1,6 @@
-import { images } from "./assets.js";
-import { drawImage } from "./canvas.js";
-import { bindInputs } from "./input.js";
+import { images } from "./assets";
+import { drawImage } from "./canvas";
+import { bindInputs } from "./input";
 
 const inputMap = {
   moveUp: [{ key: "w" }, { key: "ArrowUp" }],

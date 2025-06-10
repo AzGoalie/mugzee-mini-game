@@ -1,14 +1,14 @@
-import { createAbilityTracker } from "./abilityTracker.js";
-import { images, audio } from "./assets.js";
+import { createAbilityTracker } from "./abilityTracker";
+import { images, audio } from "./assets";
 import {
   drawButton,
   drawFullscreenImage,
   drawImage,
   drawPanel,
   drawText,
-} from "./canvas.js";
-import { createMugzee } from "./mugzee.js";
-import { createPlayer } from "./player.js";
+} from "./canvas";
+import { createMugzee } from "./mugzee";
+import { createPlayer } from "./player";
 
 export class AddEntityEvent extends Event {
   constructor(entity) {

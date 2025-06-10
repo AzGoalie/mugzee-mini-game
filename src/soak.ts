@@ -1,9 +1,7 @@
-import { audio } from "./assets.js";
-import { cloneAudio, getRandomInt } from "./utils.js";
+import { audio } from "./assets";
+import { cloneAudio, getRandomInt } from "./utils";
 
 export function createSoak() {
-  // x: getRandomInt(380, 950),
-  // y: getRandomInt(230, 650),
   const position = {
     x: getRandomInt(380, 900),
     y: getRandomInt(230, 550),

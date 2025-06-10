@@ -1,8 +1,8 @@
-import { audio, images } from "./assets.js";
-import { drawImage, drawText } from "./canvas.js";
-import { AddEntityEvent } from "./index.js";
-import { createSoak } from "./soak.js";
-import { cloneAudio } from "./utils.js";
+import { audio, images } from "./assets";
+import { drawImage } from "./canvas";
+import { AddEntityEvent } from "./main";
+import { createSoak } from "./soak";
+import { cloneAudio } from "./utils";
 
 const radius = 25;
 
