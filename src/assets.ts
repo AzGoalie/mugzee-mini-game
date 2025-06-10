@@ -1,12 +1,18 @@
-type AssetConfig<T extends object = {}> = {
-  path: string;
-} & Partial<T>;
+type AssetConfig<T> = { path: string } & Partial<T>;
 
-type AssetTree<T extends AssetConfig = AssetConfig<{}>> = {
-  [key: string]: T | AssetTree<T>;
-};
+type AssetTree<T> = AssetConfig<T> | { [key: string]: AssetTree<T> };
 
-function isAssetConfig(value: any): value is AssetConfig<{}> {
+type AssetFactory<T> = (config: AssetConfig<T>) => Promise<T>;
+
+type LoadedAssetTree<M extends AssetTree<T>, T> = M extends AssetConfig<T>
+  ? T
+  : {
+      [K in keyof M]: M[K] extends AssetTree<T>
+        ? LoadedAssetTree<M[K], T>
+        : never;
+    };
+
+function isAssetConfig<T>(value: AssetTree<T>): value is AssetConfig<T> {
   return (
     value !== null &&
     typeof value === "object" &&
@@ -15,77 +21,56 @@ function isAssetConfig(value: any): value is AssetConfig<{}> {
   );
 }
 
-function countLeafNodes<T extends AssetConfig>(tree: AssetTree<T>): number {
+function countLeafNodes<T>(tree: AssetTree<T>): number {
   let total = 0;
 
   for (const value of Object.values(tree)) {
-    if (isAssetConfig(value)) {
-      total++;
-    } else if (value && typeof value === "object") {
-      total += countLeafNodes(value as AssetTree<T>);
-    }
+    total += isAssetConfig(value) ? 1 : countLeafNodes(value);
   }
 
   return total;
 }
 
-type AssetFactory<T extends object> = (config: AssetConfig<T>) => Promise<T>;
-
-type LoadedAssets<TTree extends AssetTree, TLoadedAsset> = {
-  [K in keyof TTree]: TTree[K] extends AssetConfig
-    ? TLoadedAsset
-    : TTree[K] extends AssetTree
-    ? LoadedAssets<TTree[K], TLoadedAsset>
-    : never;
-};
-
-async function loadAssets<
-  TInputTree extends AssetTree<any>,
-  TLoadedAsset extends object
->(
-  assets: TInputTree,
-  factory: AssetFactory<TLoadedAsset>,
+async function loadAssets<T, M extends AssetTree<T>>(
+  assets: M,
+  factory: AssetFactory<T>,
   onProgress?: (success: number, total: number) => void
-): Promise<LoadedAssets<TInputTree, TLoadedAsset>> {
-  const total = countLeafNodes(assets as AssetTree<AssetConfig<any>>);
-
+): Promise<LoadedAssetTree<M, T>> {
+  const total = countLeafNodes(assets);
   let success = 0;
 
   async function loadRecursive<TCurrentTree extends AssetTree<any>>(
     obj: TCurrentTree
-  ): Promise<LoadedAssets<TCurrentTree, TLoadedAsset>> {
+  ): Promise<LoadedAssetTree<TCurrentTree, T>> {
     const result: { [key: string]: any } = {};
 
     await Promise.all(
       Object.entries(obj).map(async ([key, value]) => {
         if (isAssetConfig(value)) {
           try {
-            result[key] = await factory(value as AssetConfig<any>);
+            result[key] = await factory(value);
             if (onProgress) onProgress(++success, total);
           } catch (err) {
             console.error(`Failed to load asset ${key}:`, err);
           }
         } else if (value && typeof value === "object") {
-          result[key] = await loadRecursive(value as AssetTree<any>);
+          result[key] = await loadRecursive(value);
         }
       })
     );
 
-    return result as LoadedAssets<TCurrentTree, TLoadedAsset>;
+    return result as LoadedAssetTree<TCurrentTree, T>;
   }
 
   return loadRecursive(assets);
 }
 
 const imageFactory: AssetFactory<HTMLImageElement> = async (config) => {
-  console.log(`Loading image from: ${config.path}`);
-  if (config.width) console.log(`Image width hint: ${config.width}`);
   const img = new Image();
   img.src = config.path;
   await new Promise<void>((resolve, reject) => {
     img.onload = () => resolve();
-    img.onerror = (e) => {
-      console.error(`Error loading image: ${config.path}`, e);
+    img.onerror = () => {
       reject(new Error(`Failed to load image: ${config.path}`));
     };
   });
@@ -93,32 +78,32 @@ const imageFactory: AssetFactory<HTMLImageElement> = async (config) => {
 };
 
 const audioFactory: AssetFactory<HTMLAudioElement> = async (config) => {
-  console.log(`Loading audio from: ${config.path}`);
-  if (config.volume !== undefined)
-    console.log(`Audio volume: ${config.volume}`);
   const audio = new Audio();
   audio.src = config.path;
-  if (config.loop) audio.loop = config.loop;
-  if (config.volume !== undefined) audio.volume = config.volume;
+  if (config.volume !== undefined) {
+    audio.volume = config.volume;
+  }
 
   await new Promise<void>((resolve, reject) => {
     audio.oncanplaythrough = () => resolve();
-    audio.onerror = (e) => {
-      console.error(`Error loading audio: ${config.path}`, e);
+    audio.onerror = () => {
       reject(new Error(`Failed to load audio: ${config.path}`));
     };
   });
   return audio;
 };
 
+const createOnProgress = (type: string) => (loaded: number, total: number) =>
+  console.log(`Loaded ${loaded}/${total} ${type}`);
+
 export async function loadImages<
   T extends AssetTree<AssetConfig<HTMLImageElement>>
->(assets: T): Promise<LoadedAssets<T, HTMLImageElement>> {
-  return loadAssets(assets, imageFactory);
+>(assets: T): Promise<LoadedAssetTree<T, HTMLImageElement>> {
+  return loadAssets(assets, imageFactory, createOnProgress("images"));
 }
 
 export async function loadAudio<
   T extends AssetTree<AssetConfig<HTMLAudioElement>>
->(assets: T): Promise<LoadedAssets<T, HTMLAudioElement>> {
-  return loadAssets(assets, audioFactory);
+>(assets: T): Promise<LoadedAssetTree<T, HTMLAudioElement>> {
+  return loadAssets(assets, audioFactory, createOnProgress("audio"));
 }
