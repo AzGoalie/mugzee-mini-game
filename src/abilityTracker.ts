@@ -1,5 +1,5 @@
 import { drawPanel, drawText } from "./canvas";
-import { assets } from "./config";
+import { assets, inputManager } from "./config";
 import { cloneAudio, shuffleArray } from "./utils";
 
 type Ability = "1" | "2" | "3";
@@ -37,13 +37,13 @@ export function createAbilityTracker() {
     }
   }
 
-  addEventListener("ability1", ({ pressed }) => {
+  inputManager.on("ability1", ({ pressed }) => {
     if (pressed) checkAbility("1");
   });
-  addEventListener("ability2", ({ pressed }) => {
+  inputManager.on("ability2", ({ pressed }) => {
     if (pressed) checkAbility("2");
   });
-  addEventListener("ability3", ({ pressed }) => {
+  inputManager.on("ability3", ({ pressed }) => {
     if (pressed) checkAbility("3");
   });
 

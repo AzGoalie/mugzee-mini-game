@@ -1,5 +1,5 @@
 import { loadAudio, loadImages } from "./assets";
-import { InputEvent } from "./input";
+import { InputManager } from "./input";
 
 export const assets = {
   images: await loadImages({
@@ -80,14 +80,6 @@ export const inputMap = {
   ability1: [{ key: "1" }],
   ability2: [{ key: "2" }],
   ability3: [{ key: "3" }],
-};
+} as const;
 
-type InputMap = typeof inputMap;
-
-type InputEventMap<T extends Record<string, any>> = {
-  [K in keyof T]: InputEvent;
-};
-
-declare global {
-  interface WindowEventMap extends InputEventMap<InputMap> {}
-}
+export const inputManager = new InputManager(inputMap);

@@ -1,5 +1,5 @@
 import { drawImage } from "./canvas";
-import { assets } from "./config";
+import { assets, inputManager } from "./config";
 
 export function createPlayer() {
   const position = { x: 550, y: 250 };
@@ -8,22 +8,21 @@ export function createPlayer() {
 
   const img = assets.images.meleeDps;
 
-  addEventListener(
-    "moveUp",
-    ({ pressed }) => (velocity.y += pressed ? -speed : speed)
-  );
-  addEventListener(
-    "moveDown",
-    ({ pressed }) => (velocity.y += pressed ? speed : -speed)
-  );
-  addEventListener(
-    "moveLeft",
-    ({ pressed }) => (velocity.x += pressed ? -speed : speed)
-  );
-  addEventListener(
-    "moveRight",
-    ({ pressed }) => (velocity.x += pressed ? speed : -speed)
-  );
+  inputManager.on("moveUp", ({ pressed }) => {
+    velocity.y += pressed ? -speed : speed;
+  });
+
+  inputManager.on("moveDown", ({ pressed }) => {
+    velocity.y += pressed ? speed : -speed;
+  });
+
+  inputManager.on("moveLeft", ({ pressed }) => {
+    velocity.x += pressed ? -speed : speed;
+  });
+
+  inputManager.on("moveRight", ({ pressed }) => {
+    velocity.x += pressed ? speed : -speed;
+  });
 
   const update = (delta: number) => {
     position.x += delta * velocity.x;

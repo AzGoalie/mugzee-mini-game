@@ -6,8 +6,7 @@ import {
   drawPanel,
   drawText,
 } from "./canvas";
-import { assets, inputMap } from "./config";
-import { bindInputs } from "./input";
+import { assets } from "./config";
 import { createMugzee } from "./mugzee";
 import { createPlayer } from "./player";
 
@@ -227,7 +226,7 @@ function render(ctx: CanvasRenderingContext2D) {
   renderUi(ctx);
 }
 
-function init() {
+export function init() {
   const canvas = document.getElementById("game") as HTMLCanvasElement;
   if (!canvas) {
     throw new Error("Did you forget to add the canvas with an id of 'game'?");
@@ -250,8 +249,6 @@ function init() {
 
   reset();
 
-  bindInputs(inputMap);
-
   let previousTime = 0;
 
   function frame(timestamp: number) {
@@ -267,5 +264,3 @@ function init() {
 
   requestAnimationFrame(frame);
 }
-
-init();
