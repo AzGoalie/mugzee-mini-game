@@ -1,5 +1,7 @@
 import { assets } from "./config";
-import { cloneAudio, getRandomInt } from "./utils";
+import { getRandomInt } from "./core/Math";
+import { createTimer, type Timer } from "./core/Timer";
+import { cloneAudio } from "./utils";
 
 export function createSoak() {
   const position = {
@@ -7,15 +9,32 @@ export function createSoak() {
     y: getRandomInt(230, 550),
   };
 
-  let detonateTime = 5;
-  let timer = 0;
+  const detonateTime = 5;
+  const detonateTimer = createTimer(() => detonate(), {
+    delay: detonateTime,
+    once: true,
+  });
+
+  let successTimer: Timer;
+
+  let elapsedTime = 0;
   let soaked = false;
   let alpha = 0;
 
   let remove = false;
 
+  function detonate() {
+    if (!soaked) {
+      cloneAudio(assets.audio.explosion).play();
+      dispatchEvent(new Event("damage"));
+    }
+
+    remove = true;
+  }
+
   function render(ctx: CanvasRenderingContext2D) {
     const hexAlpha = alpha.toString(16).padStart(2, "0");
+
     ctx.save();
     ctx.fillStyle = soaked ? "#00ff0066" : `#bf0900${hexAlpha}`;
     ctx.strokeStyle = soaked ? "#00880066" : `#720500${hexAlpha}`;
@@ -31,23 +50,24 @@ export function createSoak() {
   }
 
   function update(delta: number) {
-    timer += delta;
+    elapsedTime += delta;
+    alpha = Math.floor((elapsedTime / detonateTime) * 255);
 
-    alpha = Math.floor((timer / detonateTime) * 255);
-
-    if (timer >= detonateTime) {
-      if (!soaked) {
-        cloneAudio(assets.audio.explosion).play();
-        dispatchEvent(new Event("damage"));
-      }
-      remove = true;
+    if (successTimer) {
+      successTimer.update(delta);
     }
+
+    detonateTimer.update(delta);
   }
 
   function collide() {
     if (!soaked) {
       soaked = true;
-      detonateTime = timer + 1;
+      detonateTimer.stop();
+      successTimer = createTimer(() => (remove = true), {
+        delay: 1,
+        once: true,
+      });
 
       const info = cloneAudio(assets.audio.info);
       info.volume = 0.2;
