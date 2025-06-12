@@ -1,6 +1,6 @@
-type AssetConfig<T> = { path: string } & Partial<T>;
+export type AssetConfig<T> = { path: string } & Partial<T>;
 
-type AssetTree<T> = AssetConfig<T> | { [key: string]: AssetTree<T> };
+export type AssetTree<T> = AssetConfig<T> | { [key: string]: AssetTree<T> };
 
 type AssetFactory<T> = (config: AssetConfig<T>) => Promise<T>;
 

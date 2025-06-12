@@ -1,5 +1,5 @@
-import { loadAudio, loadImages } from "./assets";
-import { InputManager } from "./input";
+import { loadAudio, loadImages } from "./core/AssetLoader";
+import { InputManager } from "./core/InputManager";
 
 export const assets = {
   images: await loadImages({

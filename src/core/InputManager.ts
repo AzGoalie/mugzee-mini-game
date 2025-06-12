@@ -1,10 +1,10 @@
-type KeyBinding = { key: string };
-type InputMap = Record<string, readonly KeyBinding[]>;
+export type KeyBinding = { key: string };
+export type InputMap = Record<string, readonly KeyBinding[]>;
 
-type InputEvent = {
+export type InputEvent = {
   pressed: boolean;
 };
-type Listener = (event: InputEvent) => void;
+export type Listener = (event: InputEvent) => void;
 
 export class InputManager<T extends InputMap> {
   private listeners: { [K in keyof T]?: Set<Listener> } = {};
