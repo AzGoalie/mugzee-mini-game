@@ -1,7 +1,7 @@
-import { assets } from "./config";
-import { getRandomInt } from "./core/Math";
-import { createTimer, type Timer } from "./core/Timer";
-import { cloneAudio } from "./utils";
+import { assets } from "../config";
+import { getRandomInt } from "../core/Math";
+import { createTimer, type Timer } from "../core/Timer";
+import { cloneAudio } from "../utils";
 
 export function createSoak() {
   const position = {

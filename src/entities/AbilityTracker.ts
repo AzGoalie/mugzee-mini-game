@@ -1,6 +1,6 @@
-import { drawPanel, drawText } from "./canvas";
-import { assets, inputManager } from "./config";
-import { cloneAudio, shuffleArray } from "./utils";
+import { assets, inputManager } from "../config";
+import { drawPanel, drawText } from "../core/Renderer";
+import { cloneAudio, shuffleArray } from "../utils";
 
 type Ability = "1" | "2" | "3";
 const abilities: Ability[] = ["1", "2", "3"];

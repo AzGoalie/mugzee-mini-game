@@ -1,5 +1,5 @@
-import { drawImage } from "./canvas";
-import { assets, inputManager } from "./config";
+import { assets, inputManager } from "../config";
+import { drawImage } from "../core/Renderer";
 
 export function createPlayer() {
   const position = { x: 550, y: 250 };

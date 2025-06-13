@@ -1,24 +1,15 @@
-export function drawFullscreenImage(
-  ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement
-) {
-  ctx.drawImage(img, 0, 0);
-}
-
 export function drawImage(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement,
   x: number,
   y: number,
-  scale = 1
+  scale = 1,
+  centered = true
 ) {
-  ctx.drawImage(
-    img,
-    x - (img.width * scale) / 2,
-    y - (img.height * scale) / 2,
-    img.width * scale,
-    img.height * scale
-  );
+  const dx = centered ? x - (img.width * scale) / 2 : x;
+  const dy = centered ? y - (img.height * scale) / 2 : y;
+
+  ctx.drawImage(img, dx, dy, img.width * scale, img.height * scale);
 }
 
 export function drawText(

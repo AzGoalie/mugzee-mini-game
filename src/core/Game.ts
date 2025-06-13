@@ -14,7 +14,7 @@ export interface Scene {
   onExit?: () => void;
 }
 
-export abstract class Game {
+export class Game {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
 
@@ -84,7 +84,7 @@ export abstract class Game {
     this.currentScene?.onEnter?.();
   }
 
-  gameLoop(currentTime: number): void {
+  private gameLoop = (currentTime: number): void => {
     const delta = (currentTime - this.lastFrameTime) / 1000;
     this.lastFrameTime = currentTime;
 
@@ -92,5 +92,5 @@ export abstract class Game {
     this.currentScene?.render(this.ctx);
 
     this.animationFrameId = requestAnimationFrame(this.gameLoop);
-  }
+  };
 }

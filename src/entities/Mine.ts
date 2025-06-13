@@ -1,8 +1,8 @@
-import { drawImage } from "./canvas";
-import { assets } from "./config";
-import { AddEntityEvent } from "./main";
-import { createSoak } from "./soak";
-import { cloneAudio } from "./utils";
+import { assets } from "../config";
+import { drawImage } from "../core/Renderer";
+import { AddEntityEvent } from "../scenes/BossFight";
+import { cloneAudio } from "../utils";
+import { createSoak } from "./Soak";
 
 const radius = 25;
 
