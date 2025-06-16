@@ -2,7 +2,7 @@ import { assets } from "../config";
 import type { Scene } from "../core/Game";
 import type { Vec2 } from "../core/Math";
 import { drawImage, drawPanel, drawText } from "../core/Renderer";
-import { createTimer, type Timer } from "../core/Timer";
+import { Timer } from "../core/Timer";
 import { createAbilityTracker } from "../entities/AbilityTracker";
 import { createCountdown } from "../entities/Countdown";
 import { createMugzee } from "../entities/Mugzee";
@@ -44,7 +44,7 @@ function reset() {
     score: 0,
     multiplier: 1,
     lives: 3,
-    scoreTimer: createTimer(increaseScore, { delay: 5, interval: 0.1 }),
+    scoreTimer: new Timer(increaseScore, { delay: 5, interval: 0.1 }),
     wiped: false,
     paused: true,
   };

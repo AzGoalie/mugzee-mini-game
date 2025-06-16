@@ -1,7 +1,7 @@
 import { assets } from "../config";
 import { getRandomInt, type Vec2 } from "../core/Math";
 import { drawImage } from "../core/Renderer";
-import { createTimer } from "../core/Timer";
+import { Timer } from "../core/Timer";
 import { AddEntityEvent } from "../scenes/BossFight";
 import { createMine } from "./Mine";
 
@@ -11,16 +11,16 @@ export function createMugzee({ position: player }: { position: Vec2 }) {
   const spawnRadius = 50;
   const difficultyIncrease = 0.5;
 
-  const mineTimer = createTimer(() => spawnMine(), { delay: 5, interval: 3 });
-  const difficultyTimer = createTimer(() => increaseDifficulty(), {
+  const mineTimer = new Timer(() => spawnMine(), { delay: 5, interval: 3 });
+  const difficultyTimer = new Timer(() => increaseDifficulty(), {
     delay: 10,
     interval: 5,
   });
 
   function increaseDifficulty() {
-    const interval = mineTimer.getInterval();
+    const interval = mineTimer.interval;
     if (interval > 1) {
-      mineTimer.setInterval(interval - difficultyIncrease);
+      mineTimer.interval = interval - difficultyIncrease;
     }
   }
 

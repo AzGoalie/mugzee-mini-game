@@ -1,6 +1,6 @@
 import { assets } from "../config";
 import { getRandomInt } from "../core/Math";
-import { createTimer, type Timer } from "../core/Timer";
+import { Timer } from "../core/Timer";
 import { cloneAudio } from "../utils";
 
 export function createSoak() {
@@ -10,7 +10,7 @@ export function createSoak() {
   };
 
   const detonateTime = 5;
-  const detonateTimer = createTimer(() => detonate(), {
+  const detonateTimer = new Timer(() => detonate(), {
     delay: detonateTime,
     once: true,
   });
@@ -64,7 +64,7 @@ export function createSoak() {
     if (!soaked) {
       soaked = true;
       detonateTimer.stop();
-      successTimer = createTimer(() => (remove = true), {
+      successTimer = new Timer(() => (remove = true), {
         delay: 1,
         once: true,
       });
