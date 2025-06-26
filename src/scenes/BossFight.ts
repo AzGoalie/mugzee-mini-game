@@ -129,9 +129,9 @@ function renderUi(ctx: CanvasRenderingContext2D) {
   }
 
   // Score
-  drawPanel(ctx, 1015, ctx.height / 10, 150, 80);
-  drawText(ctx, `Score:`, 950, ctx.height / 11, 25);
-  drawText(ctx, state.score.toString(), 950, ctx.height / 7 - 5, 25);
+  drawPanel(ctx, 970, ctx.height / 10, 250, 80);
+  drawText(ctx, `Score:`, 875, ctx.height / 11, 25);
+  drawText(ctx, state.score.toString(), 875, ctx.height / 7 - 5, 25);
   drawText(ctx, `x ${state.multiplier}`, 1035, ctx.height / 7 - 5, 25);
 
   // Life counter
