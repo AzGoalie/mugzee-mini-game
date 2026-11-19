@@ -2,7 +2,7 @@ import { assets, inputManager } from "../config";
 import { drawImage } from "../core/Renderer";
 
 export function createPlayer() {
-  const position = { x: 550, y: 250 };
+  const position = { x: 378, y: 250 };
   const velocity = { x: 0, y: 0 };
   const speed = 300;
 

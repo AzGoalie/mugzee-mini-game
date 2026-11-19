@@ -1,34 +1,18 @@
-import { drawButton, drawPanel, drawText } from "../core/Renderer";
-
 export const createReadyCheck = (onReady: () => void) => {
-  const wrapper = document.getElementById("wrapper");
-  let ready = false;
-
+  const panel = document.getElementById("ready-check")!;
+  const button = document.getElementById("ready-button")!;
+  panel.hidden = false;
   const onClick = () => {
+    panel.hidden = true;
+    button.blur();
     onReady();
-    ready = true;
-    wrapper?.removeEventListener("click", onClick);
   };
-  wrapper?.addEventListener("click", onClick);
-
-  const render = (ctx: CanvasRenderingContext2D) => {
-    if (!ready) {
-      drawPanel(ctx, ctx.width / 2, ctx.height / 2, 300, 100);
-      drawText(
-        ctx,
-        "A ready check has been initiated",
-        ctx.width / 2,
-        ctx.height / 2 - 15,
-        15,
-        true
-      );
-
-      drawButton(ctx, ctx.width / 2, ctx.height / 2 + 20, 75, 32);
-      drawText(ctx, "Ready", ctx.width / 2, ctx.height / 2 + 25, 15, true);
-    }
+  button.addEventListener("click", onClick, { once: true });
+  button.focus({ preventScroll: true });
+  return {
+    destroy: () => {
+      panel.hidden = true;
+      button.removeEventListener("click", onClick);
+    },
   };
-
-  const update = () => {};
-
-  return { render, update, shouldRemove: () => ready };
 };

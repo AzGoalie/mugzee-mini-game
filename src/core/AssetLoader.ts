@@ -4,13 +4,14 @@ export type AssetTree<T> = AssetConfig<T> | { [key: string]: AssetTree<T> };
 
 type AssetFactory<T> = (config: AssetConfig<T>) => Promise<T>;
 
-type LoadedAssetTree<M extends AssetTree<T>, T> = M extends AssetConfig<T>
-  ? T
-  : {
-      [K in keyof M]: M[K] extends AssetTree<T>
-        ? LoadedAssetTree<M[K], T>
-        : never;
-    };
+type LoadedAssetTree<M extends AssetTree<T>, T> =
+  M extends AssetConfig<T>
+    ? T
+    : {
+        [K in keyof M]: M[K] extends AssetTree<T>
+          ? LoadedAssetTree<M[K], T>
+          : never;
+      };
 
 function isAssetConfig<T>(value: AssetTree<T>): value is AssetConfig<T> {
   return (
@@ -34,13 +35,13 @@ function countLeafNodes<T>(tree: AssetTree<T>): number {
 async function loadAssets<T, M extends AssetTree<T>>(
   assets: M,
   factory: AssetFactory<T>,
-  onProgress?: (success: number, total: number) => void
+  onProgress?: (success: number, total: number) => void,
 ): Promise<LoadedAssetTree<M, T>> {
   const total = countLeafNodes(assets);
   let success = 0;
 
   async function loadRecursive<TCurrentTree extends AssetTree<any>>(
-    obj: TCurrentTree
+    obj: TCurrentTree,
   ): Promise<LoadedAssetTree<TCurrentTree, T>> {
     const result: { [key: string]: any } = {};
 
@@ -56,7 +57,7 @@ async function loadAssets<T, M extends AssetTree<T>>(
         } else if (value && typeof value === "object") {
           result[key] = await loadRecursive(value);
         }
-      })
+      }),
     );
 
     return result as LoadedAssetTree<TCurrentTree, T>;
@@ -97,13 +98,13 @@ const createOnProgress = (type: string) => (loaded: number, total: number) =>
   console.log(`Loaded ${loaded}/${total} ${type}`);
 
 export async function loadImages<
-  T extends AssetTree<AssetConfig<HTMLImageElement>>
+  T extends AssetTree<AssetConfig<HTMLImageElement>>,
 >(assets: T): Promise<LoadedAssetTree<T, HTMLImageElement>> {
   return loadAssets(assets, imageFactory, createOnProgress("images"));
 }
 
 export async function loadAudio<
-  T extends AssetTree<AssetConfig<HTMLAudioElement>>
+  T extends AssetTree<AssetConfig<HTMLAudioElement>>,
 >(assets: T): Promise<LoadedAssetTree<T, HTMLAudioElement>> {
   return loadAssets(assets, audioFactory, createOnProgress("audio"));
 }

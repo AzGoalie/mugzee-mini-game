@@ -8,6 +8,8 @@ Dodge the mines coming from the Boss and touch the red circles to prevent them f
 
 Live version can be played here: https://azgoalie.github.io/mugzee-mini-game/
 
+Run `npm run dev` for local development and `npm run build` to type-check and build for production.
+
 # Disclaimer
 
 World of Warcraft, Warcraft and Blizzard Entertainment are trademarks or registered trademarks of Blizzard Entertainment, Inc. in the U.S. and/or other countries. This repository/website is not affiliated with Blizzard Entertainment.

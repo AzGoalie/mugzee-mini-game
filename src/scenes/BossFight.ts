@@ -1,12 +1,12 @@
 import { assets } from "../config";
 import type { Scene } from "../core/Game";
 import type { Vec2 } from "../core/Math";
-import { drawImage, drawPanel, drawText } from "../core/Renderer";
 import { Timer } from "../core/Timer";
 import { createAbilityTracker } from "../entities/AbilityTracker";
 import { createCountdown } from "../entities/Countdown";
 import { createMugzee } from "../entities/Mugzee";
 import { createPlayer } from "../entities/Player";
+import { createGameUi } from "../ui/GameUi";
 import { createReadyCheck } from "../ui/ReadyCheck";
 
 interface State {
@@ -31,8 +31,10 @@ interface Entity {
 let state: State;
 let player: Omit<Required<Entity>, "shouldRemove" | "collide">;
 let mugzee: Entity;
-let abilityTracker: Entity;
-let readyCheck: Entity;
+let abilityTracker: ReturnType<typeof createAbilityTracker>;
+let readyCheck: ReturnType<typeof createReadyCheck>;
+let countdown: ReturnType<typeof createCountdown> | undefined;
+let ui: ReturnType<typeof createGameUi>;
 let entities: Entity[];
 
 function increaseScore() {
@@ -51,10 +53,13 @@ function reset() {
 
   player = createPlayer();
   mugzee = createMugzee(player);
-  abilityTracker = createAbilityTracker();
+  abilityTracker?.destroy();
+  readyCheck?.destroy();
+  countdown = undefined;
+  abilityTracker = createAbilityTracker(() => !state.paused);
   readyCheck = createReadyCheck(onReady);
 
-  player.position.x = 550;
+  player.position.x = 378;
   player.position.y = 250;
 
   entities = [mugzee];
@@ -69,7 +74,7 @@ function onReady() {
   assets.audio.pullTimer.play();
 
   state.paused = false;
-  entities.push(createCountdown(6));
+  countdown = createCountdown(6);
 }
 
 function wipe() {
@@ -94,11 +99,15 @@ function collidedWithPlayer(entity: Entity) {
 }
 
 function update(delta: number) {
-  if (state.paused) return;
+  if (state.paused) {
+    updateUi();
+    return;
+  }
 
   state.scoreTimer.update(delta);
 
-  abilityTracker.update(delta);
+  countdown?.update(delta);
+  if (countdown?.shouldRemove()) countdown = undefined;
   player.update(delta);
   entities.forEach((e) => e.update(delta));
 
@@ -113,31 +122,15 @@ function update(delta: number) {
   }
 
   entities = entities.filter(({ shouldRemove }) => !shouldRemove?.());
+  updateUi();
 }
 
-function renderUi(ctx: CanvasRenderingContext2D) {
-  if (state.paused && !state.wiped) {
-    readyCheck.render(ctx);
-  }
-
-  if (!state.paused) {
-    abilityTracker.render(ctx);
-  }
-
-  if (state.wiped) {
-    drawImage(ctx, assets.images.wipe, 0, 0, 1, false);
-  }
-
-  // Score
-  drawPanel(ctx, 970, ctx.height / 10, 250, 80);
-  drawText(ctx, `Score:`, 875, ctx.height / 11, 25);
-  drawText(ctx, state.score.toString(), 875, ctx.height / 7 - 5, 25);
-  drawText(ctx, `x ${state.multiplier}`, 1035, ctx.height / 7 - 5, 25);
-
-  // Life counter
-  drawPanel(ctx, 260, ctx.height / 10, 150, 80);
-  drawImage(ctx, assets.images.reincarnation, 230, ctx.height / 10);
-  drawText(ctx, state.lives.toString(), 290, ctx.height / 8, 50, true);
+function updateUi() {
+  ui.update({
+    ...state,
+    rotation: abilityTracker.getState(),
+    countdown: countdown?.getValue(),
+  });
 }
 
 function render(ctx: CanvasRenderingContext2D) {
@@ -145,16 +138,15 @@ function render(ctx: CanvasRenderingContext2D) {
   ctx.clearRect(0, 0, ctx.width, ctx.height);
   ctx.restore();
 
-  drawImage(ctx, assets.images.arena, 0, 0, 1, false);
+  ctx.drawImage(assets.images.arena, 0, 0);
 
   entities.forEach((e) => e.render(ctx));
 
   player.render(ctx);
-
-  renderUi(ctx);
 }
 
 function onEnter() {
+  ui = createGameUi();
   assets.audio.pullTimer.onended = () => {
     assets.audio.alarm.play();
     assets.audio.music.play();

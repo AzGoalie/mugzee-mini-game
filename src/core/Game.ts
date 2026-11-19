@@ -42,8 +42,6 @@ export class Game {
     const width = this.canvas.width;
     const height = this.canvas.height;
 
-    this.canvas.style.width = `${width}px`;
-    this.canvas.style.height = `${height}px`;
     this.canvas.width *= devicePixelRatio;
     this.canvas.height *= devicePixelRatio;
 

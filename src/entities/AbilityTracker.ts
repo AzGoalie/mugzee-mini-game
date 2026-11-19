@@ -1,14 +1,14 @@
 import { assets, inputManager } from "../config";
-import { drawPanel, drawText } from "../core/Renderer";
+import type { Listener } from "../core/InputManager";
 import { cloneAudio, shuffleArray } from "../utils";
 
 type Ability = "1" | "2" | "3";
 const abilities: Ability[] = ["1", "2", "3"];
 
-export function createAbilityTracker() {
+export function createAbilityTracker(isActive: () => boolean) {
   const generateSequence = () => shuffleArray([...abilities]);
-  const successFill = "#037703";
-  const errorFill = "#770303";
+  const successFill = "success";
+  const errorFill = "error";
 
   let sequence = generateSequence();
   let success: string[] = [];
@@ -37,45 +37,20 @@ export function createAbilityTracker() {
     }
   }
 
-  inputManager.on("ability1", ({ pressed }) => {
-    if (pressed) checkAbility("1");
+  const listeners = abilities.map((ability) => {
+    const action = `ability${ability}` as "ability1" | "ability2" | "ability3";
+    const listener: Listener = ({ pressed }) => {
+      if (pressed && isActive()) checkAbility(ability);
+    };
+    inputManager.on(action, listener);
+    return { action, listener };
   });
-  inputManager.on("ability2", ({ pressed }) => {
-    if (pressed) checkAbility("2");
-  });
-  inputManager.on("ability3", ({ pressed }) => {
-    if (pressed) checkAbility("3");
-  });
-
-  function render(ctx: CanvasRenderingContext2D) {
-    ctx.save();
-
-    const x = ctx.width / 2;
-    const y = ctx.height / 10;
-
-    const w = 30;
-    const h = 30;
-    const offset = 28;
-
-    drawPanel(ctx, x, y, 150, 80);
-    drawText(ctx, "Your Rotation", x, y - 15, 15, true);
-
-    drawPanel(ctx, x - 40, y + 20, w, h, success[0]);
-    drawText(ctx, sequence[0], x - 40, y + offset, 15, true, "#ffffff");
-
-    drawPanel(ctx, x, y + 20, w, h, success[1]);
-    drawText(ctx, sequence[1], x, y + offset, 15, true, "#ffffff");
-
-    drawPanel(ctx, x + 40, y + 20, w, h, success[2]);
-    drawText(ctx, sequence[2], x + 40, y + offset, 15, true, "#ffffff");
-
-    ctx.restore();
-  }
-
-  function update(_: number) {}
 
   return {
-    render,
-    update,
+    getState: () => ({ sequence, results: success, currentIndex }),
+    destroy: () =>
+      listeners.forEach(({ action, listener }) =>
+        inputManager.off(action, listener),
+      ),
   };
 }

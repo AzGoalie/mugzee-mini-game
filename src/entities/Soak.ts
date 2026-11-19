@@ -5,7 +5,7 @@ import { cloneAudio } from "../utils";
 
 export function createSoak() {
   const position = {
-    x: getRandomInt(380, 900),
+    x: getRandomInt(208, 728),
     y: getRandomInt(230, 550),
   };
 

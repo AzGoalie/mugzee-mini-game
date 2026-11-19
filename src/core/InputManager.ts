@@ -17,8 +17,8 @@ export class InputManager<T extends InputMap> {
 
     this.keyToAction = Object.fromEntries(
       Object.entries(inputMap).flatMap(([action, bindings]) =>
-        bindings.map(({ key }) => [key, action])
-      )
+        bindings.map(({ key }) => [key, action]),
+      ),
     );
   }
 

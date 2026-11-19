@@ -1,20 +1,73 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/style.css" />
     <title>Mug'Zee</title>
   </head>
   <body>
     <div id="wrapper">
-      <canvas id="game" width="1280" height="720"> </canvas>
+      <canvas
+        id="game"
+        width="936"
+        height="720"
+        aria-label="Mug’Zee arena"
+      ></canvas>
       <div id="overlay">
-        <div id="ui"></div>
+        <div id="ui" hidden>
+          <header class="hud">
+            <section class="panel lives-panel" aria-label="Lives remaining">
+              <img id="life-icon" alt="" />
+              <div>
+                <span class="label">Lives</span
+                ><output id="lives" aria-live="polite">3</output>
+              </div>
+            </section>
+            <section
+              id="rotation"
+              class="panel rotation-panel"
+              aria-label="Ability rotation"
+              hidden
+            >
+              <span class="label">Your rotation</span>
+              <ol id="rotation-steps">
+                <li></li>
+                <li></li>
+                <li></li>
+              </ol>
+            </section>
+            <section class="panel score-panel" aria-label="Score">
+              <span class="label">Score</span>
+              <div class="score-row">
+                <output id="score">0</output
+                ><span id="multiplier" class="multiplier">× 1</span>
+              </div>
+            </section>
+          </header>
+          <div id="countdown" role="status" aria-live="polite" hidden></div>
+          <section
+            id="ready-check"
+            class="ready-layer"
+            aria-labelledby="ready-title"
+            hidden
+          >
+            <div class="panel ready-panel">
+              <h1 id="ready-title">A ready check has been initiated</h1>
+              <button id="ready-button" type="button">Ready</button>
+              <span class="controls"
+                >Move <kbd>WASD</kbd> / <kbd>↑←↓→</kbd> · Abilities <kbd>1</kbd>
+                <kbd>2</kbd> <kbd>3</kbd></span
+              >
+            </div>
+          </section>
+          <div id="wipe" role="status" hidden>
+            <img id="wipe-image" alt="Raid wiped. Preparing another attempt…" />
+          </div>
+        </div>
       </div>
     </div>
 
-    <script type="module" , src="/src/main.ts"></script>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
